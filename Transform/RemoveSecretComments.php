@@ -89,6 +89,8 @@ class RemoveSecretComments extends \Compare_Files_In_Repos\Transform {
 			$line_starts_at = $line_ends_at + 1;
 			$line_ends_at = strpos( $file_contents, "\n", $line_ends_at + 1 );
 		}
+
+		return $output;
 	}
 
 	public function transform( string $file_contents, string $file_path ) : string {
