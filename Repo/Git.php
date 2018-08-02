@@ -94,7 +94,7 @@ class Git extends \Compare_Files_In_Repos\Repo {
 
 		do {
 			$log = $this->exec( sprintf(
-				'git log --follow -n %d --pretty=format:"%%h:%%p" %s -- %s',
+				'git log --name-only --follow -n %d --pretty=format:"%%h:%%p" %s -- %s',
 				$limit,
 				escapeshellarg( $revision ),
 				escapeshellarg( $file_path )
@@ -104,10 +104,11 @@ class Git extends \Compare_Files_In_Repos\Repo {
 				break;
 			}
 
-			$entries = explode( "\n", $log );
+			$entries = explode( "\n\n", $log );
 			foreach ( $entries as $entry ) {
-				[ $revision, $parent ] = explode( ':', trim( $entry ) );
-				yield $revision;
+				[ $revision, $remainder ] = explode( ':', trim( $entry ) );
+				[ $parent, $file_path ] = explode( "\n", trim( $remainder ) );
+				yield [ $revision, $file_path ];
 			}
 
 			$revision = $parent;

@@ -181,7 +181,7 @@ class SVN extends \Compare_Files_In_Repos\Repo {
 			libxml_disable_entity_loader( $entity_loader );
 
 			foreach ( $revisions as $revision ) {
-				yield (string) $revision;
+				yield [ (string) $revision, $file_path ];
 			}
 
 			$revision = $revision - 1;
