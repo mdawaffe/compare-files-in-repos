@@ -7,7 +7,7 @@ namespace Compare_Files_In_Repos\Repo;
 class SVN extends \Compare_Files_In_Repos\Repo {
 	private $options = [];
 	private $executable = 'svn';
-	private $path_prefix = '';
+	private $path_prefix = '/';
 
 	public function __construct( string $root_path, array $transforms = [] ) {
 		parent::__construct( $root_path, $transforms );
@@ -28,7 +28,7 @@ class SVN extends \Compare_Files_In_Repos\Repo {
 		$url = (string) $info->entry->url;
 		$root = (string) $info->entry->repository->root;
 
-		$this->path_prefix = substr( $url, strlen( $root ) );
+		$this->path_prefix = substr( $url, strlen( $root ) ) . '/';
 
 		libxml_disable_entity_loader( $entity_loader );
 	}
@@ -182,6 +182,7 @@ class SVN extends \Compare_Files_In_Repos\Repo {
 		$limit = 100;
 
 		$revision = 'BASE';
+		$previous_file_path = $file_path;
 
 		do {
 			$xml = $this->exec( sprintf(
@@ -200,10 +201,20 @@ class SVN extends \Compare_Files_In_Repos\Repo {
 			$log = simplexml_load_string( $xml );
 			$revisions = [];
 			foreach ( $log->logentry as $logentry ) {
+				$revision = (int) $logentry['revision'];
+				foreach ( $logentry->paths->path as $path ) {
+					$the_path = substr( (string) $path, strlen( $this->path_prefix ) );
+					if ( $the_path === $file_path && isset( $path['copyfrom-path'] ) ) {
+						$previous_file_path = substr( (string) $path['copyfrom-path'], strlen( $this->path_prefix ) );
+					}
+				}
+
 				$revisions[] = [
-					(int) $logentry['revision'],
-					substr( (string) $logentry->paths->path[0], strlen( $this->path_prefix ) + 1 ),
+					$revision,
+					$file_path,
 				];
+
+				$file_path = $previous_file_path;
 			}
 
 			libxml_disable_entity_loader( $entity_loader );
