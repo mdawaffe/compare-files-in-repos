@@ -52,6 +52,8 @@ class Compare {
 		} else {
 			$ancestor = $this->find_common_ancestor( $left_file, $right_file );
 
+			$return = array_merge( $return, $ancestor );
+
 			if ( $ancestor['found_ancestor'] ) {
 				if ( 0 === $ancestor['left_ahead'] ) {
 					$return['status'] = 'right-ahead';
@@ -60,12 +62,11 @@ class Compare {
 				} else {
 					$return['status'] = 'divergent';
 				}
-
-				$return = array_merge( $return, $ancestor );
-				unset( $return['found_ancestor'] );
 			} else {
 				$return['status'] = 'no-common-ancestor';
 			}
+
+			unset( $return['found_ancestor'] );
 		}
 
 		return $return;
