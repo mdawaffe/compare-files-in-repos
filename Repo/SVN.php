@@ -7,6 +7,31 @@ namespace Compare_Files_In_Repos\Repo;
 class SVN extends \Compare_Files_In_Repos\Repo {
 	private $options = [];
 	private $executable = 'svn';
+	private $path_prefix = '';
+
+	public function __construct( string $root_path, array $transforms = [] ) {
+		parent::__construct( $root_path, $transforms );
+
+		$xml = $this->exec( sprintf(
+			'info --xml %s',
+			escapeshellarg( $this->root_path )
+		), $status );
+
+		if ( 0 !== $status ) {
+			throw new \Exception( "Could not find an SVN Repo at '%s'", $this->root_path );
+		}
+
+		$entity_loader = libxml_disable_entity_loader( true );
+
+		$info = simplexml_load_string( $xml );
+
+		$url = (string) $info->entry->url;
+		$root = (string) $info->entry->repository->root;
+
+		$this->path_prefix = substr( $url, strlen( $root ) );
+
+		libxml_disable_entity_loader( $entity_loader );
+	}
 
 	private function exec( $command, &$status = null ) {
 		$real_command = sprintf( '%s %s %s', $this->executable, $this->option_string(), $command );
@@ -177,7 +202,7 @@ class SVN extends \Compare_Files_In_Repos\Repo {
 			foreach ( $log->logentry as $logentry ) {
 				$revisions[] = [
 					(int) $logentry['revision'],
-					(string) $logentry->paths->path[0],
+					substr( (string) $logentry->paths->path[0], strlen( $this->path_prefix ) + 1 ),
 				];
 			}
 
