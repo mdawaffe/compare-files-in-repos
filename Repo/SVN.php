@@ -160,7 +160,7 @@ class SVN extends \Compare_Files_In_Repos\Repo {
 
 		do {
 			$xml = $this->exec( sprintf(
-				'log --quiet --xml --limit %d %s@%s',
+				'log --verbose --quiet --xml --limit %d %s@%s',
 				$limit,
 				escapeshellarg( $file_path ),
 				escapeshellarg( (string) $revision )
@@ -175,12 +175,15 @@ class SVN extends \Compare_Files_In_Repos\Repo {
 			$log = simplexml_load_string( $xml );
 			$revisions = [];
 			foreach ( $log->logentry as $logentry ) {
-				$revisions[] = (int) $logentry['revision'];
+				$revisions[] = [
+					(int) $logentry['revision'],
+					(string) $logentry->paths->path[0],
+				];
 			}
 
 			libxml_disable_entity_loader( $entity_loader );
 
-			foreach ( $revisions as $revision ) {
+			foreach ( $revisions as [ $revision, $file_path ] ) {
 				yield [ (string) $revision, $file_path ];
 			}
 
