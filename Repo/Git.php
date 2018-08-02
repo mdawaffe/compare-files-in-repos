@@ -107,7 +107,7 @@ class Git extends \Compare_Files_In_Repos\Repo {
 			$entries = explode( "\n\n", $log );
 			foreach ( $entries as $entry ) {
 				[ $revision, $remainder ] = explode( ':', trim( $entry ) );
-				[ $parent, $file_path ] = explode( "\n", trim( $remainder ) );
+				[ $parent, $file_path ] = explode( "\n", $remainder );
 				yield [ $revision, $file_path ];
 			}
 
