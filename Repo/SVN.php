@@ -17,9 +17,11 @@ class SVN extends \Compare_Files_In_Repos\Repo {
 		fclose( $pipes[2] );
 		
 		$status = proc_close( $exec );
+
+		$this->logger->debug( $command, compact( 'status' ) );
 		
 		if ( trim( $error ) ) {
-			error_log( $error );
+			$this->logger->warning( $error, compact( 'command', 'status' ) );
 		}
 		
 		return $output;
@@ -100,6 +102,7 @@ class SVN extends \Compare_Files_In_Repos\Repo {
 	public function is_ignored( string $file_path ) : bool {
 		$path_pieces = explode( '/', $file_path );
 		if ( in_array( '.svn', $path_pieces, true ) ) {
+			$this->logger->debug( sprintf( 'Ignoring .svn file: %s', $file_path ) );
 			return true;
 		}
 
@@ -118,7 +121,7 @@ class SVN extends \Compare_Files_In_Repos\Repo {
 		$revision = 'BASE';
 
 		do {
-			$xml = $this->exec( $a= sprintf(
+			$xml = $this->exec( sprintf(
 				'svn log --quiet --xml --limit %d %s@%s',
 				$limit,
 				escapeshellarg( $file_path ),

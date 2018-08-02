@@ -18,8 +18,10 @@ class Git extends \Compare_Files_In_Repos\Repo {
 
 		$status = proc_close( $exec );
 
+		$this->logger->debug( $command, compact( 'status' ) );
+
 		if ( trim( $error ) ) {
-			error_log( $error );
+			$this->logger->warning( $error, compact( 'command', 'status' ) );
 		}
 
 		return $output;
@@ -73,6 +75,7 @@ class Git extends \Compare_Files_In_Repos\Repo {
 	public function is_ignored( string $file_path ) : bool {
 		$path_pieces = explode( '/', $file_path );
 		if ( in_array( '.git', $path_pieces, true ) ) {
+			$this->logger->debug( sprintf( 'Ignoring .git file: %s', $file_path ) );
 			return true;
 		}
 

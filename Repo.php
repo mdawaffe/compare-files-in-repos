@@ -5,9 +5,13 @@ declare( strict_types = 1 );
 namespace Compare_Files_In_Repos;
 
 abstract class Repo {
+	use \Psr\Log\LoggerAwareTrait;
+
 	public $root_path = '';
 
 	public function __construct( string $root_path, array $transforms = [] ) {
+		$this->logger = new \Psr\Log\NullLogger;
+
 		$this->root_path = $root_path;
 		foreach ( $transforms as $transform ) {
 			if ( $transform instanceof Transform ) {
