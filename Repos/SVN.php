@@ -54,7 +54,7 @@ class SVN extends Repo {
 
 	public function meta_data_of_revision( string $revision ) : array {
 		$xml = $this->exec( sprintf(
-			'svn log --xml -r %d',
+			'svn log --xml -r %s',
 			escapeshellarg( $revision )
 		) );
 
@@ -85,7 +85,7 @@ class SVN extends Repo {
 		}
 
 		$contents = $this->exec( sprintf(
-			'svn cat -r %d %s',
+			'svn cat -r %s %s',
 			escapeshellarg( $revision ),
 			escapeshellarg( $file_path )
 		), $status );
@@ -140,7 +140,7 @@ class SVN extends Repo {
 			libxml_disable_entity_loader( $entity_loader );
 
 			foreach ( $revisions as $revision ) {
-				yield $revision;
+				yield (string) $revision;
 			}
 
 			$revision = $revision - 1;
