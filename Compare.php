@@ -84,7 +84,7 @@ class Compare {
 	}
 
 	public function find_common_ancestor( string $left_file, string $right_file ) {
-		list( $slow, $slow_file, $fast, $fast_file ) = $this->get_slow_fast_repos( $left_file, $right_file );
+		[ $slow, $slow_file, $fast, $fast_file ] = $this->get_slow_fast_repos( $left_file, $right_file );
 
 		$left_revision = $right_revision = false;
 

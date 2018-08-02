@@ -103,7 +103,7 @@ class Git extends Repo {
 
 			$entries = explode( "\n", $log );
 			foreach ( $entries as $entry ) {
-				list( $revision, $parent ) = explode( ':', trim( $entry ) );
+				[ $revision, $parent ] = explode( ':', trim( $entry ) );
 				yield $revision;
 			}
 
