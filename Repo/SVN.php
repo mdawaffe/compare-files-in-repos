@@ -6,10 +6,11 @@ namespace Compare_Files_In_Repos\Repo;
 
 class SVN extends \Compare_Files_In_Repos\Repo {
 	private $options = [];
+	private $executable = 'svn';
 
 	private function exec( $command, &$status = null ) {
-		$real_command = preg_replace( '/(^\S*svn)(\s+)/', '\\1 ' . $this->option_string() . '\\2', $command );
-		$redacted_command = preg_replace( '/(^\S*svn)(\s+)/', '\\1 ' . $this->option_string( [ 'password' => 'REDACTED' ] ) . '\\2', $command );
+		$real_command = sprintf( '%s %s %s', $this->executable, $this->option_string(), $command );
+		$redacted_command = sprintf( '%s %s %s', $this->executable, $this->option_string( [ 'password' => 'REDACTED' ] ), $command );
 
 		$exec = proc_open( $real_command, [
 			1 => array( 'pipe', 'w' ),
@@ -58,13 +59,19 @@ class SVN extends \Compare_Files_In_Repos\Repo {
 		return $old;
 	}
 
+	public function set_executable( string $executable = 'svn' ) : string {
+		$old = $this->executable;
+		$this->executable = $executable;
+		return $old;
+	}
+
 	public function is_slow() : bool {
 		static $is_slow;
 		if ( isset( $is_slow ) ) {
 			return $is_slow;
 		}
 
-		$xml = $this->exec( 'svn info --xml' );
+		$xml = $this->exec( 'info --xml' );
 		
 		$entity_loader = libxml_disable_entity_loader( true );
 
@@ -78,7 +85,7 @@ class SVN extends \Compare_Files_In_Repos\Repo {
 
 	public function revision_of_file( string $file_path ) : string {
 		$rev = trim( $this->exec( sprintf(
-			'svn info %s | grep "Last Changed Rev:"',
+			'info %s | grep "Last Changed Rev:"',
 			escapeshellarg( $file_path )
 		) ) );
 
@@ -87,7 +94,7 @@ class SVN extends \Compare_Files_In_Repos\Repo {
 
 	public function meta_data_of_revision( string $revision ) : array {
 		$xml = $this->exec( sprintf(
-			'svn log --xml -r %s',
+			'log --xml -r %s',
 			escapeshellarg( $revision )
 		) );
 
@@ -118,7 +125,7 @@ class SVN extends \Compare_Files_In_Repos\Repo {
 		}
 
 		$contents = $this->exec( sprintf(
-			'svn cat -r %s %s',
+			'cat -r %s %s',
 			escapeshellarg( $revision ),
 			escapeshellarg( $file_path )
 		), $status );
@@ -139,7 +146,7 @@ class SVN extends \Compare_Files_In_Repos\Repo {
 
 		// Doesn't work for files that do not exist
 		$svn_status_flag = substr( $this->exec( sprintf(
-			'svn status %s',
+			'status %s',
 			escapeshellarg( $this->root_path . '/' . $file_path )
 		) ), 0, 1 );
 
@@ -153,7 +160,7 @@ class SVN extends \Compare_Files_In_Repos\Repo {
 
 		do {
 			$xml = $this->exec( sprintf(
-				'svn log --quiet --xml --limit %d %s@%s',
+				'log --quiet --xml --limit %d %s@%s',
 				$limit,
 				escapeshellarg( $file_path ),
 				escapeshellarg( (string) $revision )
