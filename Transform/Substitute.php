@@ -8,6 +8,8 @@ class Substitute extends \Compare_Files_In_Repos\Transform {
 	private $substitutions = [];
 
 	public function __construct( array $substitutions, callable $file_matcher = null ) {
+		parent::__construct();
+
 		$this->substitutions = $substitutions;
 		$this->file_matcher = $file_matcher;
 	}
@@ -17,10 +19,23 @@ class Substitute extends \Compare_Files_In_Repos\Transform {
 			return $file_contents;
 		}
 
-		return preg_replace(
+		$result = preg_replace(
 			array_keys( $this->substitutions ),
 			array_values( $this->substitutions ),
-			$file_contents
+			$file_contents,
+			-1,
+			$count
 		);
+
+		if ( $count ) {
+			$this->logger->debug( sprintf(
+				'Made %d substitution%s in %s',
+				$count,
+				1 === $count ? '' : 's', // lol
+				$file_path
+			) );
+		}
+
+		return $result;
 	}
 }

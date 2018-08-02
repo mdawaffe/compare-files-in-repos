@@ -8,10 +8,12 @@ class RemoveSecretComments extends \Compare_Files_In_Repos\Transform {
 	private $tag = '';
 
 	public function __construct( string $tag ) {
+		parent::__construct();
+
 		$this->tag = $tag;
 	}
 
-	private function php( string $file_contents ) : string {
+	private function php( string $file_contents, string $file_path ) : string {
 		$output = '';
 
 		$tag = "@{$this->tag}";
@@ -39,6 +41,7 @@ class RemoveSecretComments extends \Compare_Files_In_Repos\Transform {
 			case T_COMMENT :
 			case T_DOC_COMMENT :
 				if ( false !== stripos( $token[1], $tag ) ) {
+					$this->logger->debug( sprintf( 'Removing %s from %s', $tag, $file_path ) );
 					$whitespace = rtrim( $whitespace, " \t" );
 					$i_just_removed_a_secret_comment = true;
 					break;
@@ -55,7 +58,7 @@ class RemoveSecretComments extends \Compare_Files_In_Repos\Transform {
 		return $output;
 	}
 
-	private function js( string $file_contents ) : string {
+	private function js( string $file_contents, string $file_path ) : string {
 		$output = '';
 
 		$tag = "@{$this->tag}";
@@ -75,8 +78,11 @@ class RemoveSecretComments extends \Compare_Files_In_Repos\Transform {
 					$hide_block_started = false;
 				}
 			} elseif ( false !== stripos( $line, $start_tag ) ) {
+				$this->logger->debug( sprintf( 'Removing %s--%s from %s', $start_tag, $end_tag, $file_path ) );
 				$hide_block_started = true;
-			} elseif ( false === stripos( $line, $tag ) ) {
+			} elseif ( false !== stripos( $line, $tag ) ) {
+				$this->logger->debug( sprintf( 'Removing %s from %s', $tag, $file_path ) );
+			} else {
 				$output .= $line;
 			}
 
@@ -90,9 +96,9 @@ class RemoveSecretComments extends \Compare_Files_In_Repos\Transform {
 
 		switch ( $extension ) {
 		case 'php' :
-			return $this->php( $file_contents );
+			return $this->php( $file_contents, $file_path );
 		case 'js' :
-			return $this->js( $file_contents );
+			return $this->js( $file_contents, $file_path );
 		}
 
 		return $file_contents;
