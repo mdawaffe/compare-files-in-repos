@@ -50,7 +50,6 @@ class Compare {
 		} else if ( rtrim( $left_contents, "\n" ) === rtrim( $right_contents, "\n" ) ) {
 			$return['status'] = 'in-sync';
 		} else {
-			var_dump( $left_file, $right_file );
 			$ancestor = $this->find_common_ancestor( $left_file, $right_file );
 
 			if ( $ancestor['found_ancestor'] ) {
