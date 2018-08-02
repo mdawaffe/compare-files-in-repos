@@ -34,6 +34,8 @@ class Compare {
 		$return = [
 			'left_file' => $left_file,
 			'right_file' => $right_file,
+			'left_file_old' => $left_file,
+			'right_file_old' => $right_file,
 			'left_exists' => false !== $left_contents,
 			'right_exists' => false !== $right_contents,
 			'status' => '',
@@ -124,10 +126,10 @@ class Compare {
 			$slow_ahead++;
 		}
 
-		list ( $left_ahead, $right_ahead ) = $slow === $this->left
-			? [ $slow_ahead, $fast_ahead ]
-			: [ $fast_ahead, $slow_ahead ];
+		list ( $left_ahead, $right_ahead, $left_file_old, $right_file_old ) = $slow === $this->left
+			? [ $slow_ahead, $fast_ahead, $slow_file, $fast_file ]
+			: [ $fast_ahead, $slow_ahead, $fast_file, $slow_file ];
 
-		return compact( 'found_ancestor', 'left_revision', 'right_revision', 'left_ahead', 'right_ahead' );
+		return compact( 'found_ancestor', 'left_revision', 'right_revision', 'left_ahead', 'right_ahead', 'left_file_old', 'right_file_old' );
 	}
 }
