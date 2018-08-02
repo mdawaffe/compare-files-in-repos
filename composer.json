@@ -1,7 +1,9 @@
 {
     "name": "mdawaffe/compare-files-in-repos",
     "license": "GPL-2.0+",
-    "require": {},
+    "require": {
+        "psr/log": "^1.0"
+    },
     "autoload": {
         "psr-4": {
             "Compare_Files_In_Repos\\": ""
