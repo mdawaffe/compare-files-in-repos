@@ -32,17 +32,17 @@ class Compare {
 		$right_contents = $this->right->get_file( $right_file );
 
 		$return = [
-			'left_file' => $left_file,
-			'right_file' => $right_file,
-			'left_file_old' => $left_file,
+			'left_file'      => $left_file,
+			'right_file'     => $right_file,
+			'left_file_old'  => $left_file,
 			'right_file_old' => $right_file,
-			'left_exists' => false !== $left_contents,
-			'right_exists' => false !== $right_contents,
-			'status' => '',
-			'left_revision' => false === $left_contents ? '' : 'HEAD',
+			'left_exists'    => false !== $left_contents,
+			'right_exists'   => false !== $right_contents,
+			'status'         => '',
+			'left_revision'  => false === $left_contents ? '' : 'HEAD',
 			'right_revision' => false === $right_contents ? '' : 'HEAD',
-			'left_ahead' => 0,
-			'right_ahead' => 0,
+			'left_ahead'     => 0,
+			'right_ahead'    => 0,
 		];
 
 		if ( $return['left_exists'] xor $return['right_exists'] ) {
