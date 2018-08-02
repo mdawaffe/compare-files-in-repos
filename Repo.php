@@ -12,7 +12,7 @@ abstract class Repo {
 	public function __construct( string $root_path, array $transforms = [] ) {
 		$this->logger = new \Psr\Log\NullLogger;
 
-		$this->root_path = $root_path;
+		$this->root_path = rtrim( $root_path, '/' );
 		foreach ( $transforms as $transform ) {
 			if ( $transform instanceof Transform ) {
 				continue;
