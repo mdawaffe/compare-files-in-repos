@@ -2,9 +2,9 @@
 
 declare( strict_types = 1 );
 
-namespace Compare_Files_In_Repos;
+namespace Compare_Files_In_Repos\Repo;
 
-class Git extends Repo {
+class Git extends \Compare_Files_In_Repos\Repo {
 	private function exec( $command, &$status = null ) {
 		$exec = proc_open( $command, [
 			1 => array( 'pipe', 'w' ),

@@ -2,9 +2,9 @@
 
 declare( strict_types = 1 );
 
-namespace Compare_Files_In_Repos;
+namespace Compare_Files_In_Repos\Transform;
 
-class Substitute extends Transform {
+class Substitute extends \Compare_Files_In_Repos\Transform {
 	private $substitutions = [];
 
 	public function __construct( array $substitutions, callable $file_matcher = null ) {

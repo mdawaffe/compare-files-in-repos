@@ -4,14 +4,11 @@ declare( strict_types = 1 );
 
 namespace Compare_Files_In_Repos;
 
-require __DIR__ . '/Repo.php';
-require __DIR__ . '/Transform.php';
-
 class Compare {
 	private $left;
 	private $right;
 
-	public function __construct( Repo $left, Repo $right ) {
+	public function __construct( namespace\Repo $left, namespace\Repo $right ) {
 		$this->left = $left;
 		$this->right = $right;
 	}

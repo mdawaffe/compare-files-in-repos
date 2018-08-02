@@ -2,9 +2,9 @@
 
 declare( strict_types = 1 );
 
-namespace Compare_Files_In_Repos;
+namespace Compare_Files_In_Repos\Transform;
 
-class Remove_Secret_Comments extends Transform {
+class RemoveSecretComments extends \Compare_Files_In_Repos\Transform {
 	private $tag = '';
 
 	public function __construct( string $tag ) {
