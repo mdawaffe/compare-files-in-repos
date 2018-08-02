@@ -60,7 +60,7 @@ class Git extends Repo {
 		$contents = $this->exec( sprintf(
 			'git show %s:%s',
 			escapeshellarg( $revision ),
-			escapshellarg( $file_path )
+			escapeshellarg( $file_path )
 		), $status );
 
 		if ( 0 !== $status ) {
