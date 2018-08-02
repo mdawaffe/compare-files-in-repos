@@ -5,8 +5,13 @@ declare( strict_types = 1 );
 namespace Compare_Files_In_Repos\Repo;
 
 class SVN extends \Compare_Files_In_Repos\Repo {
+	private $options = [];
+
 	private function exec( $command, &$status = null ) {
-		$exec = proc_open( $command, [
+		$real_command = preg_replace( '/(^\S*svn)(\s+)/', '\\1 ' . $this->option_string() . '\\2', $command );
+		$redacted_command = preg_replace( '/(^\S*svn)(\s+)/', '\\1 ' . $this->option_string( [ 'password' => 'REDACTED' ] ) . '\\2', $command );
+
+		$exec = proc_open( $real_command, [
 			1 => array( 'pipe', 'w' ),
 			2 => array( 'pipe', 'w' ),
 		], $pipes, $this->root_path );
@@ -18,13 +23,39 @@ class SVN extends \Compare_Files_In_Repos\Repo {
 		
 		$status = proc_close( $exec );
 
-		$this->logger->debug( $command, compact( 'status' ) );
+		$this->logger->debug( $redacted_command, compact( 'status' ) );
 		
 		if ( trim( $error ) ) {
+			$command = $redacted_command;
 			$this->logger->warning( $error, compact( 'command', 'status' ) );
 		}
 		
 		return $output;
+	}
+
+	private function option_string( array $maybe_overwrite = [] ) {
+		$options = array_merge( $this->options, array_intersect_key( $maybe_overwrite, $this->options ) );
+
+		return join( ' ', array_map( function( $name, $value ) {
+			if ( is_null( $value ) ) {
+				return sprintf(
+					'--%s',
+					escapeshellarg( str_replace( '_', '-', $name ) )
+				);
+			}
+
+			return sprintf(
+				'--%s %s',
+				escapeshellarg( str_replace( '_', '-', $name ) ),
+				escapeshellarg( str_replace( '_', '-', $value ) )
+			);
+		}, array_keys( $options ), array_values( $options ) ) );
+	}
+
+	public function set_options( array $options ) : array {
+		$old = $this->options;
+		$this->options = $options;
+		return $old;
 	}
 
 	public function is_slow() : bool {
