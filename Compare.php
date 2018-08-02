@@ -33,7 +33,7 @@ class Compare {
 
 		$return = [
 			'left_file' => $left_file,
-			'righ_file' => $right_file,
+			'right_file' => $right_file,
 			'left_exists' => false !== $left_contents,
 			'right_exists' => false !== $right_contents,
 			'status' => '',
