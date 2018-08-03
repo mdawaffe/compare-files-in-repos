@@ -7,6 +7,12 @@ namespace Compare_Files_In_Repos\Repo;
 class Git extends \Compare_Files_In_Repos\Repo {
 	private $executable = 'git';
 
+	// 2018-08-01 20:41:15 -0700 -> 2018-08-01T20:41:15-07:00
+	private static function isoFromIsoLike( $iso_like ) {
+		[ $date, $time, $tz ] = explode( ' ', $iso_like );
+		return "{$date}T{$time}" . substr( $tz, 0, -2 ) . ':' . substr( $tz, -2 );
+	}
+
 	private function exec( $command, &$status = null ) {
 		$command = join( ' ', array_filter( [ $this->executable, $this->option_string(), $command ] ) );
 
@@ -50,10 +56,11 @@ class Git extends \Compare_Files_In_Repos\Repo {
 
 	public function meta_data_of_revision( string $revision ) : array {
 		[ $author, $date, $message ] = explode( "\x00", $this->exec( sprintf(
-			'log -n 1 --pretty=format:"%%an <%%ae>%%x00%%aI%%x00%%B" %s',
+			'log -n 1 --pretty=format:"%%an <%%ae>%%x00%%ai%%x00%%B" %s',
 			escapeshellarg( $revision )
 		) ) );
 
+		$date = self::isoFromIsoLike( $date );
 		$message = trim( $message );
 
 		return compact( 'author', 'date', 'message' );
@@ -104,7 +111,7 @@ class Git extends \Compare_Files_In_Repos\Repo {
 
 		do {
 			$log = $this->exec( sprintf(
-				'log --name-only --follow -n %d --pretty=format:"%%h:%%p:%%aI" %s -- %s',
+				'log --name-only --follow -n %d --pretty=format:"%%h%%x00%%p%%x00%%ai" %s -- %s',
 				$limit,
 				escapeshellarg( $revision ),
 				escapeshellarg( $file_path )
@@ -116,8 +123,9 @@ class Git extends \Compare_Files_In_Repos\Repo {
 
 			$entries = explode( "\n\n", $log );
 			foreach ( $entries as $entry ) {
-				[ $revision, $parent, $remainder ] = explode( ':', trim( $entry ) );
+				[ $revision, $parent, $remainder ] = explode( "\x00", trim( $entry ) );
 				[ $date, $file_path ] = explode( "\n", $remainder );
+				$date = self::isoFromIsoLike( $date );
 				yield [ $revision, $date, $file_path ];
 			}
 
