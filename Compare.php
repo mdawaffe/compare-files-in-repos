@@ -141,6 +141,12 @@ class Compare {
 			? [ $slow_ahead, $fast_ahead, $slow_file, $fast_file ]
 			: [ $fast_ahead, $slow_ahead, $fast_file, $slow_file ];
 
-		return compact( 'found_ancestor', 'left_revision', 'right_revision', 'left_date', 'right_date', 'left_ahead', 'right_ahead', 'left_file_old', 'right_file_old' );
+		return compact(
+			'found_ancestor',
+			'left_revision', 'right_revision',
+			'left_date', 'right_date',
+			'left_ahead', 'right_ahead',
+			'left_file_old', 'right_file_old'
+		);
 	}
 }
