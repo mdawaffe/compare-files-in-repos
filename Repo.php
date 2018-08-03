@@ -25,6 +25,10 @@ abstract class Repo {
 		$this->transforms = $transforms;
 	}
 
+	protected static function normalize_datetime( string $datetime ) : string {
+		return gmdate( 'c', strtotime( $datetime ) );
+	}
+
 	protected function option_string( array $maybe_overwrite = [] ) {
 		$options = array_merge( $this->options, array_intersect_key( $maybe_overwrite, $this->options ) );
 

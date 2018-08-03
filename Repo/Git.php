@@ -7,12 +7,6 @@ namespace Compare_Files_In_Repos\Repo;
 class Git extends \Compare_Files_In_Repos\Repo {
 	private $executable = 'git';
 
-	// 2018-08-01 20:41:15 -0700 -> 2018-08-01T20:41:15-07:00
-	private static function isoFromIsoLike( $iso_like ) {
-		[ $date, $time, $tz ] = explode( ' ', $iso_like );
-		return "{$date}T{$time}" . substr( $tz, 0, -2 ) . ':' . substr( $tz, -2 );
-	}
-
 	private function exec( $command, &$status = null ) {
 		$command = join( ' ', array_filter( [ $this->executable, $this->option_string(), $command ] ) );
 
@@ -60,7 +54,7 @@ class Git extends \Compare_Files_In_Repos\Repo {
 			escapeshellarg( $revision )
 		) ) );
 
-		$date = self::isoFromIsoLike( $date );
+		$date = self::normalize_datetime( $date );
 		$message = trim( $message );
 
 		return compact( 'author', 'date', 'message' );
@@ -125,7 +119,7 @@ class Git extends \Compare_Files_In_Repos\Repo {
 			foreach ( $entries as $entry ) {
 				[ $revision, $parent, $remainder ] = explode( "\x00", trim( $entry ) );
 				[ $date, $file_path ] = explode( "\n", $remainder );
-				$date = self::isoFromIsoLike( $date );
+				$date = self::normalize_datetime( $date );
 				yield [ $revision, $date, $file_path ];
 			}
 

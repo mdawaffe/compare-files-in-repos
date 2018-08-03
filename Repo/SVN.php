@@ -104,7 +104,7 @@ class SVN extends \Compare_Files_In_Repos\Repo {
 
 		$data = [
 			'author' => trim( (string) $logentry->author ),
-			'date' => trim( (string) $logentry->date ),
+			'date' => self::normalize_datetime( (string) $logentry->date ),
 			'message' => trim( (string) $logentry->msg ),
 		];
 
@@ -176,7 +176,7 @@ class SVN extends \Compare_Files_In_Repos\Repo {
 			$revisions = [];
 			foreach ( $log->logentry as $logentry ) {
 				$revision = (int) $logentry['revision'];
-				$date = (string) $logentry->date;
+				$date = self::normalize_datetime( (string) $logentry->date );
 				foreach ( $logentry->paths->path as $path ) {
 					$the_path = substr( (string) $path, strlen( $this->path_prefix ) );
 					if ( $the_path === $file_path && isset( $path['copyfrom-path'] ) ) {
