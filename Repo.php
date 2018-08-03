@@ -8,6 +8,7 @@ abstract class Repo {
 	use \Psr\Log\LoggerAwareTrait;
 
 	public $root_path = '';
+	protected $options = [];
 
 	public function __construct( string $root_path, array $transforms = [] ) {
 		$this->logger = new \Psr\Log\NullLogger;
@@ -22,6 +23,31 @@ abstract class Repo {
 		}
 
 		$this->transforms = $transforms;
+	}
+
+	protected function option_string( array $maybe_overwrite = [] ) {
+		$options = array_merge( $this->options, array_intersect_key( $maybe_overwrite, $this->options ) );
+
+		return join( ' ', array_map( function( $name, $value ) {
+			if ( is_null( $value ) ) {
+				return sprintf(
+					'--%s',
+					escapeshellarg( str_replace( '_', '-', $name ) )
+				);
+			}
+
+			return sprintf(
+				'--%s %s',
+				escapeshellarg( str_replace( '_', '-', $name ) ),
+				escapeshellarg( str_replace( '_', '-', $value ) )
+			);
+		}, array_keys( $options ), array_values( $options ) ) );
+	}
+
+	public function set_options( array $options ) : array {
+		$old = $this->options;
+		$this->options = $options;
+		return $old;
 	}
 
 	private function apply_transforms( string $file_contents, string $file_path ) : string {

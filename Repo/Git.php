@@ -5,7 +5,11 @@ declare( strict_types = 1 );
 namespace Compare_Files_In_Repos\Repo;
 
 class Git extends \Compare_Files_In_Repos\Repo {
+	private $executable = 'git';
+
 	private function exec( $command, &$status = null ) {
+		$command = join( ' ', array_filter( [ $this->executable, $this->option_string(), $command ] ) );
+
 		$exec = proc_open( $command, [
 			1 => array( 'pipe', 'w' ),
 			2 => array( 'pipe', 'w' ),
@@ -27,20 +31,26 @@ class Git extends \Compare_Files_In_Repos\Repo {
 		return $output;
 	}
 
+	public function set_executable( string $executable = 'git' ) : string {
+		$old = $this->executable;
+		$this->executable = $executable;
+		return $old;
+	}
+
 	public function is_slow() : bool {
 		return false;
 	}
 
 	public function revision_of_file( string $file_path ) : string {
 		return trim( $this->exec( sprintf(
-			'git rev-list -1 --abbrev-commit HEAD %s',
+			'rev-list -1 --abbrev-commit HEAD %s',
 			escapeshellarg( $file_path )
 		) ) );
 	}
 
 	public function meta_data_of_revision( string $revision ) : array {
 		[ $author, $date, $message ] = explode( "\x00", $this->exec( sprintf(
-			'git log -n 1 --pretty=format:"%%an <%%ae>%%x00%%aI%%x00%%B" %s',
+			'log -n 1 --pretty=format:"%%an <%%ae>%%x00%%aI%%x00%%B" %s',
 			escapeshellarg( $revision )
 		) ) );
 
@@ -60,7 +70,7 @@ class Git extends \Compare_Files_In_Repos\Repo {
 		}
 
 		$contents = $this->exec( sprintf(
-			'git show %s:%s',
+			'show %s:%s',
 			escapeshellarg( $revision ),
 			escapeshellarg( $file_path )
 		), $status );
@@ -80,7 +90,7 @@ class Git extends \Compare_Files_In_Repos\Repo {
 		}
 
 		$this->exec( sprintf(
-			'git check-ignore --quiet -- %s',
+			'check-ignore --quiet -- %s',
 			escapeshellarg( $file_path )
 		), $status );
 
@@ -94,7 +104,7 @@ class Git extends \Compare_Files_In_Repos\Repo {
 
 		do {
 			$log = $this->exec( sprintf(
-				'git log --name-only --follow -n %d --pretty=format:"%%h:%%p" %s -- %s',
+				'log --name-only --follow -n %d --pretty=format:"%%h:%%p" %s -- %s',
 				$limit,
 				escapeshellarg( $revision ),
 				escapeshellarg( $file_path )

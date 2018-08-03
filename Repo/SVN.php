@@ -5,7 +5,6 @@ declare( strict_types = 1 );
 namespace Compare_Files_In_Repos\Repo;
 
 class SVN extends \Compare_Files_In_Repos\Repo {
-	private $options = [];
 	private $executable = 'svn';
 	private $path_prefix = '/';
 
@@ -57,31 +56,6 @@ class SVN extends \Compare_Files_In_Repos\Repo {
 		}
 		
 		return $output;
-	}
-
-	private function option_string( array $maybe_overwrite = [] ) {
-		$options = array_merge( $this->options, array_intersect_key( $maybe_overwrite, $this->options ) );
-
-		return join( ' ', array_map( function( $name, $value ) {
-			if ( is_null( $value ) ) {
-				return sprintf(
-					'--%s',
-					escapeshellarg( str_replace( '_', '-', $name ) )
-				);
-			}
-
-			return sprintf(
-				'--%s %s',
-				escapeshellarg( str_replace( '_', '-', $name ) ),
-				escapeshellarg( str_replace( '_', '-', $value ) )
-			);
-		}, array_keys( $options ), array_values( $options ) ) );
-	}
-
-	public function set_options( array $options ) : array {
-		$old = $this->options;
-		$this->options = $options;
-		return $old;
 	}
 
 	public function set_executable( string $executable = 'svn' ) : string {
