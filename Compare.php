@@ -98,7 +98,7 @@ class Compare {
 
 		$found_ancestor = false;
 		$slow_ahead = $fast_ahead = 0; // How far ahead are we from our common ancestor
-		foreach ( $slow->revisions_of_file( $slow_file ) as [ $slow_revision, $slow_file ] ) {
+		foreach ( $slow->revisions_of_file( $slow_file ) as [ $slow_revision, $slow_date, $slow_file ] ) {
 			$slow_file_contents = $slow->get_file( $slow_file, $slow_revision );
 			if ( false === $slow_file_contents ) {
 				continue;
@@ -108,7 +108,7 @@ class Compare {
 
 			$fast_ahead = 0;
 			$fast_file = $original_fast_file;
-			foreach ( $fast_revisions as [ $fast_revision, $fast_file ] ) {
+			foreach ( $fast_revisions as [ $fast_revision, $fast_date, $fast_file ] ) {
 				if ( ! isset( $fast_file_cache[$fast_revision] ) ) {
 					$fast_file_cache[$fast_revision] = $fast->get_file( $fast_file, $fast_revision );
 				}

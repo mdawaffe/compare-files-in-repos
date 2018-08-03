@@ -176,6 +176,7 @@ class SVN extends \Compare_Files_In_Repos\Repo {
 			$revisions = [];
 			foreach ( $log->logentry as $logentry ) {
 				$revision = (int) $logentry['revision'];
+				$date = (string) $logentry->date;
 				foreach ( $logentry->paths->path as $path ) {
 					$the_path = substr( (string) $path, strlen( $this->path_prefix ) );
 					if ( $the_path === $file_path && isset( $path['copyfrom-path'] ) ) {
@@ -185,6 +186,7 @@ class SVN extends \Compare_Files_In_Repos\Repo {
 
 				$revisions[] = [
 					$revision,
+					$date,
 					$file_path,
 				];
 
@@ -193,8 +195,8 @@ class SVN extends \Compare_Files_In_Repos\Repo {
 
 			libxml_disable_entity_loader( $entity_loader );
 
-			foreach ( $revisions as [ $revision, $file_path ] ) {
-				yield [ (string) $revision, $file_path ];
+			foreach ( $revisions as [ $revision, $date, $file_path ] ) {
+				yield [ (string) $revision, $date, $file_path ];
 			}
 
 			$revision = $revision - 1;
