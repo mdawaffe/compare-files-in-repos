@@ -65,8 +65,8 @@ class Compare {
 			]
 		];
 
-		if ( $return['left_exists'] xor $return['right_exists'] ) {
-			$return['status'] = $return['left_exists'] ? 'new-in-left' : 'new-in-right';
+		if ( $return['left']['exists'] xor $return['right']['exists'] ) {
+			$return['status'] = $return['left']['exists'] ? 'new-in-left' : 'new-in-right';
 		} else if ( rtrim( $left_contents, "\n" ) === rtrim( $right_contents, "\n" ) ) {
 			$return['status'] = 'in-sync';
 		} else {
@@ -75,9 +75,9 @@ class Compare {
 			$return = array_replace_recursive( $return, $ancestor );
 
 			if ( $ancestor['found_ancestor'] ) {
-				if ( 0 === $ancestor['left_ahead'] ) {
+				if ( 0 === $ancestor['left']['ahead'] ) {
 					$return['status'] = 'right-ahead';
-				} else if ( 0 === $ancestor['right_ahead'] ) {
+				} else if ( 0 === $ancestor['right']['ahead'] ) {
 					$return['status'] = 'left-ahead';
 				} else {
 					$return['status'] = 'divergent';
