@@ -41,6 +41,8 @@ class Compare {
 			'status'         => '',
 			'left_revision'  => false === $left_contents ? '' : 'HEAD',
 			'right_revision' => false === $right_contents ? '' : 'HEAD',
+			'left_date'      => '',
+			'right_date'     => '',
 			'left_ahead'     => 0,
 			'right_ahead'    => 0,
 		];
@@ -86,6 +88,7 @@ class Compare {
 		[ $slow, $slow_file, $fast, $fast_file ] = $this->get_slow_fast_repos( $left_file, $right_file );
 
 		$left_revision = $right_revision = false;
+		$left_date = $right_date = '';
 
 		$fast_cache = [];
 		$original_fast_file = $fast_file;
@@ -122,9 +125,9 @@ class Compare {
 
 				if ( $slow_file_contents === $fast_file_contents ) {
 					$found_ancestor = true;
-					list ( $left_revision, $right_revision ) = $slow === $this->left
-						? [ $slow_revision, $fast_revision ]
-						: [ $fast_revision, $slow_revision ];
+					[ $left_revision, $right_revision, $left_date, $right_date ] = $slow === $this->left
+						? [ $slow_revision, $fast_revision, $slow_date, $fast_date ]
+						: [ $fast_revision, $slow_revision, $fast_date, $slow_date ];
 					break 2;
 				}
 
@@ -138,6 +141,6 @@ class Compare {
 			? [ $slow_ahead, $fast_ahead, $slow_file, $fast_file ]
 			: [ $fast_ahead, $slow_ahead, $fast_file, $slow_file ];
 
-		return compact( 'found_ancestor', 'left_revision', 'right_revision', 'left_ahead', 'right_ahead', 'left_file_old', 'right_file_old' );
+		return compact( 'found_ancestor', 'left_revision', 'right_revision', 'left_date', 'right_date', 'left_ahead', 'right_ahead', 'left_file_old', 'right_file_old' );
 	}
 }
