@@ -90,6 +90,12 @@ class Compare {
 		$fast_cache = [];
 		$original_fast_file = $fast_file;
 
+		$fast_revisions = $fast->revisions_of_file( $fast_file );
+		if ( ! is_array( $fast_revisions ) && is_iterable( $fast_revisions ) ) {
+			// Convert to array so we can rewind for each loop in the slow_revisions foreach
+			$fast_revisions = iterator_to_array( $fast_revisions );
+		}
+
 		$found_ancestor = false;
 		$slow_ahead = $fast_ahead = 0; // How far ahead are we from our common ancestor
 		foreach ( $slow->revisions_of_file( $slow_file ) as [ $slow_revision, $slow_file ] ) {
@@ -102,7 +108,7 @@ class Compare {
 
 			$fast_ahead = 0;
 			$fast_file = $original_fast_file;
-			foreach ( $fast->revisions_of_file( $fast_file ) as [ $fast_revision, $fast_file ] ) {
+			foreach ( $fast_revisions as [ $fast_revision, $fast_file ] ) {
 				if ( ! isset( $fast_file_cache[$fast_revision] ) ) {
 					$fast_file_cache[$fast_revision] = $fast->get_file( $fast_file, $fast_revision );
 				}
