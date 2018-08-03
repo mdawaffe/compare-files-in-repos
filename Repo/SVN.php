@@ -34,8 +34,8 @@ class SVN extends \Compare_Files_In_Repos\Repo {
 	}
 
 	private function exec( $command, &$status = null ) {
-		$real_command = sprintf( '%s %s %s', $this->executable, $this->option_string(), $command );
-		$redacted_command = sprintf( '%s %s %s', $this->executable, $this->option_string( [ 'password' => 'REDACTED' ] ), $command );
+		$real_command = join( ' ', array_filter( [ $this->executable, $this->option_string(), $command ] ) );
+		$redacted_command = join( ' ', array_filter( [ $this->executable, $this->option_string( [ 'password' => 'REDACTED' ] ), $command ] ) );
 
 		$exec = proc_open( $real_command, [
 			1 => array( 'pipe', 'w' ),
