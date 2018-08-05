@@ -84,7 +84,7 @@ class SVN extends \Compare_Files_In_Repos\Repo {
 
 	public function revision_of_file( string $file_path ) : string {
 		$rev = trim( $this->exec( sprintf(
-			'info %s | grep "Last Changed Rev:"',
+			'info %s@ | grep "Last Changed Rev:"',
 			escapeshellarg( $file_path )
 		) ) );
 
@@ -124,7 +124,7 @@ class SVN extends \Compare_Files_In_Repos\Repo {
 		}
 
 		$contents = $this->exec( sprintf(
-			'cat -r %s %s',
+			'cat -r %s %s@',
 			escapeshellarg( $revision ),
 			escapeshellarg( $file_path )
 		), $status );
@@ -145,7 +145,7 @@ class SVN extends \Compare_Files_In_Repos\Repo {
 
 		// Doesn't work for files that do not exist
 		$svn_status_flag = substr( $this->exec( sprintf(
-			'status %s',
+			'status %s@',
 			escapeshellarg( $this->root_path . '/' . $file_path )
 		) ), 0, 1 );
 
