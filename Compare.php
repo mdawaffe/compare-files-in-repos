@@ -36,32 +36,22 @@ class Compare {
 			'left' => [
 				'file' => $left_file,
 				'exists' => false !== $left_contents,
-				'commit' => [
+				'ancestor' => [
 					'file' => $left_file,
 					'date' => '',
 					'revision' => false === $left_contents ? '' : 'HEAD',
 				],
-				'next_commit' => [
-					'file' => $left_file,
-					'date' => '',
-					'revision' => '',
-				],
-				'ahead' => 0,
+				'subsequent_commits' => [],
 			],
 			'right' => [
 				'file'     => $right_file,
 				'exists'   => false !== $right_contents,
-				'commit' => [
+				'ancestor' => [
 					'file' => $right_file,
 					'date' => '',
 					'revision' => false === $right_contents ? '' : 'HEAD',
 				],
-				'next_commit' => [
-					'file' => $right_file,
-					'date' => '',
-					'revision' => '',
-				],
-				'ahead' => 0,
+				'subsequent_commits' => [],
 			]
 		];
 
@@ -75,9 +65,9 @@ class Compare {
 			$return = array_replace_recursive( $return, $ancestor );
 
 			if ( $ancestor['found_ancestor'] ) {
-				if ( 0 === $ancestor['left']['ahead'] ) {
+				if ( 0 === count( $ancestor['left']['subsequent_commits'] ) ) {
 					$return['status'] = 'right-ahead';
-				} else if ( 0 === $ancestor['right']['ahead'] ) {
+				} else if ( 0 === count( $ancestor['right']['subsequent_commits'] ) ) {
 					$return['status'] = 'left-ahead';
 				} else {
 					$return['status'] = 'divergent';
@@ -118,8 +108,7 @@ class Compare {
 		}
 
 		$found_ancestor = false;
-		$slow_ahead = $fast_ahead = 0; // How far ahead are we from our common ancestor
-		$slow_next_commit = $fast_next_commit = false; // next chronologically (which is the previous commit in the loop)
+		$slow_subsequent_commits = []; // Commits after (later in time - earlier in the loop) than the common ancestor
 		foreach ( $slow->revisions_of_file( $slow_file ) as $slow_commit ) {
 			[ $slow_revision, $slow_date, $slow_file ] = $slow_commit;
 
@@ -130,9 +119,8 @@ class Compare {
 
 			$slow_file_contents = rtrim( $slow_file_contents, "\n" );
 
-			$fast_ahead = 0;
+			$fast_subsequent_commits = [];
 			$fast_file = $original_fast_file;
-			$fast_next_commit = false;
 			foreach ( $fast_revisions as $fast_commit ) {
 				[ $fast_revision, $fast_date, $fast_file ] = $fast_commit;
 
@@ -149,58 +137,47 @@ class Compare {
 
 				if ( $slow_file_contents === $fast_file_contents ) {
 					$found_ancestor = true;
-					[ $left_revision, $right_revision, $left_date, $right_date, $left_next_commit, $right_next_commit ] = $slow === $this->left
-						? [ $slow_revision, $fast_revision, $slow_date, $fast_date, $slow_next_commit, $fast_next_commit ]
-						: [ $fast_revision, $slow_revision, $fast_date, $slow_date, $fast_next_commit, $slow_next_commit ];
+					[ $left_revision, $right_revision, $left_date, $right_date ] = $slow === $this->left
+						? [ $slow_revision, $fast_revision, $slow_date, $fast_date ]
+						: [ $fast_revision, $slow_revision, $fast_date, $slow_date ];
 					break 2;
 				}
 
-				$fast_next_commit = $fast_commit;
-				$fast_ahead++;
+				$fast_subsequent_commits[] = [
+					'file'     => $fast_commit[2],
+					'date'     => $fast_commit[1],
+					'revision' => $fast_commit[0],
+				];
 			}
 
-			$slow_next_commit = $slow_commit;
-			$slow_ahead++;
+			$slow_subsequent_commits[] = [
+				'file'     => $slow_commit[2],
+				'date'     => $slow_commit[1],
+				'revision' => $slow_commit[0],
+			];
 		}
 
-		list ( $left_ahead, $right_ahead, $left_file_old, $right_file_old ) = $slow === $this->left
-			? [ $slow_ahead, $fast_ahead, $slow_file, $fast_file ]
-			: [ $fast_ahead, $slow_ahead, $fast_file, $slow_file ];
+		[ $left_file_old, $right_file_old, $left_subsequent_commits, $right_subsequent_commits ] = $slow === $this->left
+			? [ $slow_file, $fast_file, $slow_subsequent_commits, $fast_subsequent_commits ]
+			: [ $fast_file, $slow_file, $fast_subsequent_commits, $slow_subsequent_commits ];
 
 		$left = [
-			'commit' => [
+			'ancestor' => [
 				'file'     => $left_file_old,
 				'date'     => $left_date,
 				'revision' => $left_revision,
 			],
-			'ahead' => $left_ahead,
+			'subsequent_commits' => $left_subsequent_commits ?? [],
 		];
 
-		if ( $left_next_commit ) {
-			$left['next_commit'] = [
-				'file'     => $left_next_commit[2],
-				'date'     => $left_next_commit[1],
-				'revision' => $left_next_commit[0],
-			];
-		}
-
 		$right = [
-			'commit' => [
+			'ancestor' => [
 				'file'     => $right_file_old,
 				'date'     => $right_date,
 				'revision' => $right_revision,
 			],
-			'ahead' => $right_ahead,
+			'subsequent_commits' => $right_subsequent_commits ?? [],
 		];
-
-		if ( $right_next_commit ) {
-			$right['next_commit'] = [
-				'file'     => $right_next_commit[2],
-				'date'     => $right_next_commit[1],
-				'revision' => $right_next_commit[0],
-			];
-		}
-
 
 		return compact(
 			'found_ancestor',
