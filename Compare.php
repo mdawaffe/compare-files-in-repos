@@ -45,7 +45,7 @@ class Compare {
 				'ancestor' => [
 					'file' => $left_file,
 					'date' => '',
-					'revision' => false === $left_contents ? '' : 'HEAD',
+					'revision' => '',
 				],
 				'subsequent_commits' => [],
 			],
@@ -55,7 +55,7 @@ class Compare {
 				'ancestor' => [
 					'file' => $right_file,
 					'date' => '',
-					'revision' => false === $right_contents ? '' : 'HEAD',
+					'revision' => '',
 				],
 				'subsequent_commits' => [],
 			]
