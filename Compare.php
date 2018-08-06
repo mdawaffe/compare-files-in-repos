@@ -5,10 +5,14 @@ declare( strict_types = 1 );
 namespace Compare_Files_In_Repos;
 
 class Compare {
+	use \Psr\Log\LoggerAwareTrait;
+
 	private $left;
 	private $right;
 
 	public function __construct( namespace\Repo $left, namespace\Repo $right ) {
+		$this->logger = new \Psr\Log\NullLogger;
+
 		$this->left = $left;
 		$this->right = $right;
 	}
@@ -30,6 +34,8 @@ class Compare {
 
 		$left_contents = $this->left->get_file( $left_file );
 		$right_contents = $this->right->get_file( $right_file );
+
+		$this->logger->info( sprintf( "Comparing %s and %s", $left_file, $right_file ) );
 
 		$return = [
 			'status' => '',
@@ -56,23 +62,64 @@ class Compare {
 		];
 
 		if ( $return['left']['exists'] xor $return['right']['exists'] ) {
-			$return['status'] = $return['left']['exists'] ? 'new-in-left' : 'new-in-right';
+			if ( $return['left']['exists'] ) {
+				$this->logger->info( sprintf( '	%s is new', $left_file ) );
+				$return['status'] = 'new-in-left';
+			} else {
+				$this->logger->info( sprintf( '	%s is new', $right_file ) );
+				$return['status'] = 'new-in-right';
+			}
 		} else if ( rtrim( $left_contents, "\n" ) === rtrim( $right_contents, "\n" ) ) {
+			$this->logger->info( sprintf( '	%s and %s are in sync', $left_file, $right_file ) );
 			$return['status'] = 'in-sync';
 		} else {
+			$this->logger->info( '	Checking for common ancestor...' );
 			$ancestor = $this->find_common_ancestor( $left_file, $right_file );
 
 			$return = array_replace_recursive( $return, $ancestor );
 
 			if ( $ancestor['found_ancestor'] ) {
+				$left_label = $left_file === $ancestor['left']['ancestor']['file']
+					? $left_file
+					: sprintf( '%s(%s)', $ancestor['left']['ancestor']['file'], $left_file );
+				$right_label = $right_file === $ancestor['right']['ancestor']['file']
+					? $right_file
+					: sprintf( '%s(%s)', $ancestor['right']['ancestor']['file'], $right_file );
+
+				$this->logger->info( sprintf(
+					'	Found common ancestor: %s@%s = %s@%s',
+					$left_label,
+					$ancestor['left']['ancestor']['revision'],
+					$right_label,
+					$ancestor['right']['ancestor']['revision']
+				) );
+
 				if ( 0 === count( $ancestor['left']['subsequent_commits'] ) ) {
+					$this->logger->info( sprintf(
+						'	Since then, %s has changed in %d commits',
+						$right_label,
+						count( $ancestor['right']['subsequent_commits'] )
+					) );
 					$return['status'] = 'right-ahead';
 				} else if ( 0 === count( $ancestor['right']['subsequent_commits'] ) ) {
+					$this->logger->info( sprintf(
+						'	Since then, %s has changed in %d commits',
+						$left_label,
+						count( $ancestor['left']['subsequent_commits'] )
+					) );
 					$return['status'] = 'left-ahead';
 				} else {
+					$this->logger->info( sprintf(
+						'	Since then, %s has changed in %d commits and %s has changed in %d commits',
+						$left_label,
+						count( $ancestor['left']['subsequent_commits'] ),
+						$right_label,
+						count( $ancestor['right']['subsequent_commits'] )
+					) );
 					$return['status'] = 'divergent';
 				}
 			} else {
+				$this->logger->info( '	No common ancestor found' );
 				$return['status'] = 'no-common-ancestor';
 			}
 
@@ -111,6 +158,12 @@ class Compare {
 		$slow_subsequent_commits = []; // Commits after (later in time - earlier in the loop) than the common ancestor
 		foreach ( $slow->revisions_of_file( $slow_file ) as $slow_commit ) {
 			[ $slow_revision, $slow_date, $slow_file ] = $slow_commit;
+			$this->logger->info( sprintf(
+				'		Checking %s@%s against all %s commits...',
+				$slow_file,
+				$slow_revision,
+				$fast_file
+			) );
 
 			$slow_file_contents = $slow->get_file( $slow_file, $slow_revision );
 			if ( false === $slow_file_contents ) {
@@ -123,6 +176,11 @@ class Compare {
 			$fast_file = $original_fast_file;
 			foreach ( $fast_revisions as $fast_commit ) {
 				[ $fast_revision, $fast_date, $fast_file ] = $fast_commit;
+				$this->logger->info( sprintf(
+					'		- %s@%s',
+					$fast_file,
+					$fast_revision
+				) );
 
 				if ( ! isset( $fast_file_cache[$fast_revision] ) ) {
 					$fast_file_cache[$fast_revision] = $fast->get_file( $fast_file, $fast_revision );
