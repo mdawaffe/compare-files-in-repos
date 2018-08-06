@@ -63,17 +63,17 @@ class Compare {
 
 		if ( $return['left']['exists'] xor $return['right']['exists'] ) {
 			if ( $return['left']['exists'] ) {
-				$this->logger->info( sprintf( '	%s is new', $left_file ) );
+				$this->logger->info( sprintf( '  %s is new', $left_file ) );
 				$return['status'] = 'new-in-left';
 			} else {
-				$this->logger->info( sprintf( '	%s is new', $right_file ) );
+				$this->logger->info( sprintf( '  %s is new', $right_file ) );
 				$return['status'] = 'new-in-right';
 			}
 		} else if ( rtrim( $left_contents, "\n" ) === rtrim( $right_contents, "\n" ) ) {
-			$this->logger->info( sprintf( '	%s and %s are in sync', $left_file, $right_file ) );
+			$this->logger->info( sprintf( '  %s and %s are in sync', $left_file, $right_file ) );
 			$return['status'] = 'in-sync';
 		} else {
-			$this->logger->info( '	Checking for common ancestor...' );
+			$this->logger->info( '  Checking for common ancestor...' );
 			$ancestor = $this->find_common_ancestor( $left_file, $right_file );
 
 			$return = array_replace_recursive( $return, $ancestor );
@@ -87,7 +87,7 @@ class Compare {
 					: sprintf( '%s(%s)', $ancestor['right']['ancestor']['file'], $right_file );
 
 				$this->logger->info( sprintf(
-					'	Found common ancestor: %s@%s = %s@%s',
+					'  Found common ancestor: %s@%s = %s@%s',
 					$left_label,
 					$ancestor['left']['ancestor']['revision'],
 					$right_label,
@@ -96,21 +96,21 @@ class Compare {
 
 				if ( 0 === count( $ancestor['left']['subsequent_commits'] ) ) {
 					$this->logger->info( sprintf(
-						'	Since then, %s has changed in %d commits',
+						'  Since then, %s has changed in %d commits',
 						$right_label,
 						count( $ancestor['right']['subsequent_commits'] )
 					) );
 					$return['status'] = 'right-ahead';
 				} else if ( 0 === count( $ancestor['right']['subsequent_commits'] ) ) {
 					$this->logger->info( sprintf(
-						'	Since then, %s has changed in %d commits',
+						'  Since then, %s has changed in %d commits',
 						$left_label,
 						count( $ancestor['left']['subsequent_commits'] )
 					) );
 					$return['status'] = 'left-ahead';
 				} else {
 					$this->logger->info( sprintf(
-						'	Since then, %s has changed in %d commits and %s has changed in %d commits',
+						'  Since then, %s has changed in %d commits and %s has changed in %d commits',
 						$left_label,
 						count( $ancestor['left']['subsequent_commits'] ),
 						$right_label,
@@ -119,7 +119,7 @@ class Compare {
 					$return['status'] = 'divergent';
 				}
 			} else {
-				$this->logger->info( '	No common ancestor found' );
+				$this->logger->info( '  No common ancestor found' );
 				$return['status'] = 'no-common-ancestor';
 			}
 
@@ -159,7 +159,7 @@ class Compare {
 		foreach ( $slow->revisions_of_file( $slow_file ) as $slow_commit ) {
 			[ $slow_revision, $slow_date, $slow_file ] = $slow_commit;
 			$this->logger->info( sprintf(
-				'		Checking %s@%s against all %s commits...',
+				'    Checking %s@%s against all %s commits...',
 				$slow_file,
 				$slow_revision,
 				$fast_file
@@ -177,7 +177,7 @@ class Compare {
 			foreach ( $fast_revisions as $fast_commit ) {
 				[ $fast_revision, $fast_date, $fast_file ] = $fast_commit;
 				$this->logger->info( sprintf(
-					'		- %s@%s',
+					'    - %s@%s',
 					$fast_file,
 					$fast_revision
 				) );
