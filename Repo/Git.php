@@ -64,7 +64,7 @@ class Git extends \Compare_Files_In_Repos\Repo {
 		if ( ! $revision ) {
 			$contents = file_get_contents( $this->root_path . '/' . $file_path );
 			if ( false === $contents ) {
-				throw New Exception( sprintf( 'File "%s" does not exist', $file_path ) );
+				throw new \Exception( sprintf( 'File "%s" does not exist', $file_path ) );
 			}
 
 			return $contents;
@@ -77,7 +77,7 @@ class Git extends \Compare_Files_In_Repos\Repo {
 		), $status );
 
 		if ( 0 !== $status ) {
-			throw New Exception( sprintf( 'File "%s" does not exist at revision %s', $file_path, $revision ) );
+			throw new \Exception( sprintf( 'File "%s" does not exist at revision %s', $file_path, $revision ) );
 		}
 
 		return $contents;

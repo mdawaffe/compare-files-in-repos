@@ -63,7 +63,7 @@ abstract class Repo {
 	public function get_file( string $file_path, string $revision = null ) {
 		try {
 			$file_contents = $this->contents_of_file_at_revision( $file_path, $revision );
-		} catch ( Exception $e ) {
+		} catch ( \Exception $e ) {
 			return false;
 		}
 
