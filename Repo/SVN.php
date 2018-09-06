@@ -152,7 +152,7 @@ class SVN extends \Compare_Files_In_Repos\Repo {
 		return 'I' === $svn_status_flag;
 	}
 
-	public function revisions_of_file( string $file_path ) : iterable {
+	public function revisions_of_file( string $file_path ) : \Traversable {
 		$limit = 100;
 
 		$revision = 'BASE';
@@ -195,7 +195,7 @@ class SVN extends \Compare_Files_In_Repos\Repo {
 
 			libxml_disable_entity_loader( $entity_loader );
 
-			foreach ( $revisions as [ $revision, $date, $file_path ] ) {
+			foreach ( $revisions as list( $revision, $date, $file_path ) ) {
 				yield [ (string) $revision, $date, $file_path ];
 			}
 

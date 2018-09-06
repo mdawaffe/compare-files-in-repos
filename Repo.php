@@ -80,5 +80,5 @@ abstract class Repo {
 
 	abstract public function is_ignored( string $file_path ) : bool;
 
-	abstract public function revisions_of_file( string $file_path ) : iterable;
+	abstract public function revisions_of_file( string $file_path ) : \Traversable;
 }

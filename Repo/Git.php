@@ -49,7 +49,7 @@ class Git extends \Compare_Files_In_Repos\Repo {
 	}
 
 	public function meta_data_of_revision( string $revision ) : array {
-		[ $author, $date, $message ] = explode( "\x00", $this->exec( sprintf(
+		list( $author, $date, $message ) = explode( "\x00", $this->exec( sprintf(
 			'log -n 1 --pretty=format:"%%an <%%ae>%%x00%%ai%%x00%%B" %s',
 			escapeshellarg( $revision )
 		) ) );
@@ -98,7 +98,7 @@ class Git extends \Compare_Files_In_Repos\Repo {
 		return 0 === $status;
 	}
 
-	public function revisions_of_file( string $file_path ) : iterable {
+	public function revisions_of_file( string $file_path ) : \Traversable {
 		$limit = 100;
 
 		$revision = 'HEAD';
@@ -117,8 +117,8 @@ class Git extends \Compare_Files_In_Repos\Repo {
 
 			$entries = explode( "\n\n", $log );
 			foreach ( $entries as $entry ) {
-				[ $revision, $parent, $remainder ] = explode( "\x00", trim( $entry ) );
-				[ $date, $file_path ] = explode( "\n", $remainder );
+				list( $revision, $parent, $remainder ) = explode( "\x00", trim( $entry ) );
+				list( $date, $file_path ) = explode( "\n", $remainder );
 				$date = self::normalize_datetime( $date );
 				yield [ $revision, $date, $file_path ];
 			}

@@ -140,7 +140,7 @@ class Compare {
 	}
 
 	public function find_common_ancestor( string $left_file, string $right_file ) {
-		[ $slow, $slow_file, $fast, $fast_file ] = $this->get_slow_fast_repos( $left_file, $right_file );
+		list( $slow, $slow_file, $fast, $fast_file ) = $this->get_slow_fast_repos( $left_file, $right_file );
 
 		$left_revision = $right_revision = false;
 		$left_date = $right_date = '';
@@ -157,7 +157,7 @@ class Compare {
 		$found_ancestor = false;
 		$slow_subsequent_commits = []; // Commits after (later in time - earlier in the loop) than the common ancestor
 		foreach ( $slow->revisions_of_file( $slow_file ) as $slow_commit ) {
-			[ $slow_revision, $slow_date, $slow_file ] = $slow_commit;
+			list( $slow_revision, $slow_date, $slow_file ) = $slow_commit;
 			$this->logger->info( sprintf(
 				'    Checking %s@%s against all %s commits...',
 				$slow_file,
@@ -175,7 +175,7 @@ class Compare {
 			$fast_subsequent_commits = [];
 			$fast_file = $original_fast_file;
 			foreach ( $fast_revisions as $fast_commit ) {
-				[ $fast_revision, $fast_date, $fast_file ] = $fast_commit;
+				list( $fast_revision, $fast_date, $fast_file ) = $fast_commit;
 				$this->logger->info( sprintf(
 					'    - %s@%s',
 					$fast_file,
@@ -195,7 +195,7 @@ class Compare {
 
 				if ( $slow_file_contents === $fast_file_contents ) {
 					$found_ancestor = true;
-					[ $left_revision, $right_revision, $left_date, $right_date ] = $slow === $this->left
+					list( $left_revision, $right_revision, $left_date, $right_date ) = $slow === $this->left
 						? [ $slow_revision, $fast_revision, $slow_date, $fast_date ]
 						: [ $fast_revision, $slow_revision, $fast_date, $slow_date ];
 					break 2;
@@ -215,7 +215,7 @@ class Compare {
 			];
 		}
 
-		[ $left_file_old, $right_file_old, $left_subsequent_commits, $right_subsequent_commits ] = $slow === $this->left
+		list( $left_file_old, $right_file_old, $left_subsequent_commits, $right_subsequent_commits ) = $slow === $this->left
 			? [ $slow_file, $fast_file, $slow_subsequent_commits, $fast_subsequent_commits ]
 			: [ $fast_file, $slow_file, $fast_subsequent_commits, $slow_subsequent_commits ];
 
